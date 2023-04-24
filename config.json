@@ -1,5 +1,5 @@
 {
-    "interval": 1,
+    "interval": 5,
     "topic": "weather",
     "debug": true,
     
