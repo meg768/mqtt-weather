@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 
 
-
-const config = require('./config.json')
-
-
+require('yow/prefixConsole')();
 
 
 class App {
@@ -13,34 +10,19 @@ class App {
         this.debug = console.log;
         this.log = console.log;
         this.mqtt = undefined;
-        this.config = config;
-        this.cache = {};
+        this.config = require('./config.json');
+        this.debug = this.config.debug ? this.log : () => {};
+
     }
 
-	async connect() {
-        let MQTT = require('mqtt');
 
-
-		return new Promise((resolve, reject) => {
-			this.mqtt = MQTT.connect(this.config.mqtt.host, {username:this.config.mqtt.username, password:this.config.mqtt.password, port:this.config.mqtt.port});
-				
-			this.mqtt.on('connect', () => {
-				this.debug(`Connected to host ${this.config.mqtt.host}:${this.config.mqtt.port}.`);
-				resolve();
-			});		
-	
-		});
-	}
-
-    publish(topic, value) {
+    async publish(topic, value) {
 
         if (typeof(value) != 'string')
             value = JSON.stringify(value)
         
-        if (this.cache[value] == undefined)
-            this.mqtt.publish(`Weather/${topic}`, value, {retain:true});
+        await this.mqtt.publish(`${this.config.topic}/${topic}`, value, {retain:true});
         
-        this.cache[value] = value;
     }
 
     async publishWeather() {
@@ -51,9 +33,9 @@ class App {
         var request = new Request('http://api.openweathermap.org');
     
         var query = {};
-        query.appid   = config.openweathermap.appid;
-        query.lat     = config.openweathermap.latitude;
-        query.lon     = config.openweathermap.longitude;
+        query.appid   = this.config.openweathermap.appid;
+        query.lat     = this.config.openweathermap.latitude;
+        query.lon     = this.config.openweathermap.longitude;
         query.exclude = 'minutely,hourly';
         query.units   = 'metric';
         query.lang    = 'se';
@@ -64,15 +46,14 @@ class App {
         response.body.current.sunset = new Date(response.body.current.sunset * 1000);
         response.body.current.sunrise = new Date(response.body.current.sunrise * 1000);
 
-        this.debug(`Current ${response.body.current}`);
-        this.debug(`Tomorrow ${response.body.daily[1]}`);
-
         var current  = response.body.current;
         var tomorrow = response.body.daily[1];
 
-        this.publish('Today', sprintf('Just nu %d° och %s', Math.round(current.temp + 0.5), current.weather[0].description));
-        this.publish('Tomorrow', sprintf('I morgon %d° (%d°) och %s', Math.round(tomorrow.temp.max + 0.5), Math.round(tomorrow.temp.min + 0.5), tomorrow.weather[0].description));
+        await this.publish('today/text', sprintf('Just nu %d° och %s', Math.round(current.temp + 0.5), current.weather[0].description));
+        await this.publish('tomorrow/text', sprintf('I morgon %d° (%d°) och %s', Math.round(tomorrow.temp.max + 0.5), Math.round(tomorrow.temp.min + 0.5), tomorrow.weather[0].description));
 
+        await this.publish('today', current);
+        await this.publish('tomorrow', response.body.daily[1]);
 
         this.debug(sprintf('Just nu %d° och %s', Math.round(current.temp + 0.5), current.weather[0].description));
         this.debug(sprintf('I morgon %d° (%d°) och %s', Math.round(tomorrow.temp.max + 0.5), Math.round(tomorrow.temp.min + 0.5), tomorrow.weather[0].description));
@@ -89,9 +70,19 @@ class App {
 	}
 
 	async run() {
+        let Mqtt = require('mqtt');
+        let MqttAsync = require('mqtt-async');
+        let MqttCache = require('mqtt-cache');
+
 		try {
-			await this.connect();
-			await this.loop();
+
+			this.mqtt = MqttCache(MqttAsync(Mqtt.connect(this.config.mqtt.host, {username:this.config.mqtt.username, password:this.config.mqtt.password, port:this.config.port})));
+					
+			this.mqtt.on('connect', () => {
+				this.debug(`Connected to host ${this.config.mqtt.host}:${this.config.mqtt.port}.`);
+			});            
+
+            await this.loop();
 	
 		}
 		catch(error) {

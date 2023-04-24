@@ -1,13 +1,14 @@
 {
-    "interval": 60,
+    "interval": 1,
+    "topic": "weather",
+    "debug": true,
     
     "mqtt": {
-		"host": "mqtt://pi-mqtt",
-		"port": 1883,
-		"username": "meg768",
-		"password": "potatismos"
-	
-	},
+        "host": "mqtt://pi-mqtt",
+        "port": 1883,
+        "username": "meg768",
+        "password": "potatismos"
+    },
  
     "openweathermap": {
         "appid": "367c1880df3df4083ded39f56d97c9b9",
@@ -15,4 +16,3 @@
         "longitude": 13.19
     }
 }
-

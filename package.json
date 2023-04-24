@@ -6,7 +6,8 @@
   "scripts": {
     "git-pull": "git pull",
     "git-commit": "git add -A && git commit -m '-' && git push",
-    "git-revert": "git reset --hard HEAD"
+    "git-revert": "git reset --hard HEAD",
+    "goto-github": "open https://github.com/meg768/mqtt-weather.git"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,8 @@
   "homepage": "https://github.com/meg768/mqtt-weather#readme",
   "dependencies": {
     "mqtt": "^4.3.7",
+    "mqtt-async": "^1.0.46",
+    "mqtt-cache": "^1.0.1",
     "yow": "^1.0.118"
   }
 }
