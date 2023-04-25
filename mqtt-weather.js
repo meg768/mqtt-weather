@@ -54,6 +54,8 @@ class App {
 
         await this.publish('today', current);
         await this.publish('tomorrow', response.body.daily[1]);
+        await this.publish('daily', response.body.daily);
+        await this.publish('current', current);
 
         this.debug(sprintf('Just nu %d° och %s', Math.round(current.temp + 0.5), current.weather[0].description));
         this.debug(sprintf('I morgon %d° (%d°) och %s', Math.round(tomorrow.temp.max + 0.5), Math.round(tomorrow.temp.min + 0.5), tomorrow.weather[0].description));
