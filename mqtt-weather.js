@@ -18,7 +18,7 @@ class App {
 
     async publish(topic, value) {
 
-        if (typeof(value) != 'string')
+//        if (typeof(value) != 'string')
             value = JSON.stringify(value)
         
         await this.mqtt.publish(`${this.config.topic}/${topic}`, value, {retain:true});
