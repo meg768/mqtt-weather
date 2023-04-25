@@ -48,12 +48,10 @@ class App {
 
         var current  = response.body.current;
         var tomorrow = response.body.daily[1];
+        var currentWeather = sprintf('Just nu %d° och %s', Math.round(current.temp + 0.5), current.weather[0].description);
+        var tommorowsWeather = sprintf('I morgon %d° (%d°) och %s', Math.round(tomorrow.temp.max + 0.5), Math.round(tomorrow.temp.min + 0.5), tomorrow.weather[0].description);
 
-        await this.publish('today/text', sprintf('Just nu %d° och %s', Math.round(current.temp + 0.5), current.weather[0].description));
-        await this.publish('tomorrow/text', sprintf('I morgon %d° (%d°) och %s', Math.round(tomorrow.temp.max + 0.5), Math.round(tomorrow.temp.min + 0.5), tomorrow.weather[0].description));
-
-        await this.publish('today', current);
-        await this.publish('tomorrow', response.body.daily[1]);
+        await this.publish('summary', sprintf('%s. %s.', currentWeather, tommorowsWeather));
         await this.publish('daily', response.body.daily);
         await this.publish('current', current);
 
