@@ -56,6 +56,8 @@ class App {
 
         var summary = sprintf('%s %s %s', currentWeather, tommorowsWeather, dayAfterTommorowsWeather);
 
+        await this.mqtt.publish(`${this.config.topic}`, JSON.stringify(summary), {retain:true});
+
         await this.publish('summary', summary);
         await this.publish('daily', response.body.daily);
         await this.publish('current', current);
